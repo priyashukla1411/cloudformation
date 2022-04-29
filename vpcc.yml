@@ -1,31 +1,5 @@
-Resources:
-  WebAppInstance:
-    Type: AWS::EC2::Instance
-    Properties:
-      ImageId: ami-0aee2d0182c9054ac
-      InstanceType: t2.micro
-      KeyName: priya
-      SecurityGroupIds:
-        - !Ref WebAppSecurityGroup
-  WebAppSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupName: !Join ["-", [web-security-group, priya]]
-      GroupDescription: "Allow HTTP/HTTPS and SSH inbound and outbound traffic"
-      SecurityGroupIngress:
-        - IpProtocol: tcp
-          FromPort: 80
-          ToPort: 80
-          CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: 443
-          ToPort: 443
-          CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: 22
-          ToPort: 22
-          CidrIp: 0.0.0.0/0
-          Metadata:
+
+Metadata:
   AWS::CloudFormation::Interface: 
     ParameterGroups:
       - 
@@ -38,7 +12,7 @@ Resources:
           default: "Subnet CIDR"
         Parameters:
           - PublicSubnet1CIDR
-          - PublicSubnet2CIDR
+          
           - PrivateSubnet1CIDR
           - PrivateSubnet2CIDR
 
@@ -49,11 +23,7 @@ Parameters:
     Description: Please enter the IP range (CIDR notation) for this VPC
     Type: String
 
-  PublicSubnet1CIDR:
-    Default: 10.0.0.0/24
-    Description: Please enter the IP range (CIDR notation) for the public subnet
-    Type: String
-
+  
   PublicSubnet2CIDR:
     Default: 10.0.1.0/24
     Description: Please enter the IP range (CIDR notation) for the public subnet
@@ -109,16 +79,7 @@ Resources:
           Value: Priya-Public_Subnet1
       VpcId: !Ref VPC
 
-  PublicSubnet2:
-    Type: AWS::EC2::Subnet
-    Properties:
-      AvailabilityZone: !Select [ 0, !GetAZs '' ]
-      CidrBlock : !Ref PublicSubnet2CIDR
-      MapPublicIpOnLaunch: true
-      Tags:
-        - Key: Name
-          Value: Priya-Public_Subnet2
-      VpcId: !Ref VPC    
+
 
 #Create a Private Subnet
   PrivateSubnet1:
@@ -168,9 +129,33 @@ Resources:
       RouteTableId: !Ref PublicRouteTable
       SubnetId: !Ref PublicSubnet1
 
-# Associate Public Subnet2 with Public Route Table
-  PublicSubnet2RouteTableAssociation:
-    Type: AWS::EC2::SubnetRouteTableAssociation
+
+ #EC2 Instance    
+ Resources:
+  WebAppInstance:
+    Type: AWS::EC2::Instance
     Properties:
-      RouteTableId: !Ref PublicRouteTable
-      SubnetId: !Ref PublicSubnet2
+      ImageId: ami-0aee2d0182c9054ac
+      InstanceType: t2.micro
+      KeyName: priya
+      subnet1: ! Ref PublicSubnet1
+      SecurityGroupIds:
+        - !Ref WebAppSecurityGroup
+  WebAppSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Join ["-", [web-security-group, priya]]
+      GroupDescription: "Allow HTTP/HTTPS and SSH inbound and outbound traffic"
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0    
